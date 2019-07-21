@@ -12,6 +12,7 @@ public class LogStreamAnalysis {
 		Logger.getLogger("org.apache").setLevel(Level.WARN);
 		
 		SparkConf conf = new SparkConf().setMaster("local[*]").setAppName("startingSpark");
+		
 	}
 
 }
