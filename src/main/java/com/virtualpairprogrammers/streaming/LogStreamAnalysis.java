@@ -5,8 +5,11 @@ import org.apache.log4j.Logger;
 import org.apache.spark.SparkConf;
 import org.apache.spark.streaming.Durations;
 import org.apache.spark.streaming.api.java.JavaDStream;
+import org.apache.spark.streaming.api.java.JavaPairDStream;
 import org.apache.spark.streaming.api.java.JavaReceiverInputDStream;
 import org.apache.spark.streaming.api.java.JavaStreamingContext;
+
+import scala.Tuple2;
 
 public class LogStreamAnalysis {
 
@@ -18,17 +21,19 @@ public class LogStreamAnalysis {
 		
 		SparkConf conf = new SparkConf().setMaster("local[*]").setAppName("startingSpark");
 		
-		JavaStreamingContext sc  = new JavaStreamingContext(conf, Durations.seconds(30));
+		JavaStreamingContext sc  = new JavaStreamingContext(conf, Durations.seconds(2));
 		
 		JavaReceiverInputDStream<String> inputData = sc.socketTextStream("localhost", 8989);
 		
-		JavaDStream<Object> results = inputData.map(item -> item);
-		
-		results.print();
+		JavaDStream<String> results = inputData.map(item -> item);
+//		results = results.map(rawLogMessage -> rawLogMessage.split(",")[0]);
+//		results.print();
+		JavaPairDStream<String, Long> pairDStream = results.mapToPair(rawLogMEssage -> new Tuple2<> (rawLogMEssage.split(",")[0], 1L));
+		pairDStream = pairDStream.reduceByKey((x,y) -> x + y);
+		pairDStream.print();
 		
 		sc.start();
 		sc.awaitTermination();
 		
 	}
-
 }
