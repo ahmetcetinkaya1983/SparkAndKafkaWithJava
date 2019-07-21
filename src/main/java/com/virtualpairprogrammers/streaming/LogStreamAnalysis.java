@@ -29,7 +29,7 @@ public class LogStreamAnalysis {
 //		results = results.map(rawLogMessage -> rawLogMessage.split(",")[0]);
 //		results.print();
 		JavaPairDStream<String, Long> pairDStream = results.mapToPair(rawLogMEssage -> new Tuple2<> (rawLogMEssage.split(",")[0], 1L));
-		pairDStream = pairDStream.reduceByKey((x,y) -> x + y);
+		pairDStream = pairDStream.reduceByKeyAndWindow((x,y) -> x + y, Durations.minutes(2));
 		pairDStream.print();
 		
 		sc.start();
