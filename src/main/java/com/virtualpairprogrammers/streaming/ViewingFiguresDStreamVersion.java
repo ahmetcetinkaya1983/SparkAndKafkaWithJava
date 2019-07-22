@@ -49,7 +49,7 @@ public class ViewingFiguresDStreamVersion {
 //		results.print();
 
 		JavaPairDStream<Long, String> results = stream.mapToPair(item -> new Tuple2<>(item.value(), 5L))
-				.reduceByKey((x, y) -> x + y)
+				.reduceByKeyAndWindow((x, y) -> x + y, Durations.minutes(60))
 				.mapToPair(item -> item.swap())
 				.transformToPair(rdd -> rdd.sortByKey(false));
 		
