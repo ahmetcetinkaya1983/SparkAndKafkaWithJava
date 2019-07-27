@@ -5,10 +5,13 @@ import org.apache.log4j.Logger;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
+import org.apache.spark.sql.streaming.OutputMode;
+import org.apache.spark.sql.streaming.StreamingQuery;
+import org.apache.spark.sql.streaming.StreamingQueryException;
 
 public class ViewingFiguresStructuredVersion {
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws StreamingQueryException {
 		// TODO Auto-generated method stub
 		System.setProperty("hadoop.home.dir", "c:/hadoop");
 		Logger.getLogger("org.apache").setLevel(Level.WARN);
@@ -26,6 +29,19 @@ public class ViewingFiguresStructuredVersion {
 				.load();
 		
 		//start some dataframe operations
+		df.createOrReplaceTempView("viewing_figures");
+		
+		//key, value, timestamp
+		Dataset<Row> results = 
+				session.sql("select cast(value as string) as course_name, sum(5) from viewing_figures group by course_name");
+		
+		StreamingQuery query = results
+				.writeStream()
+				.format("console")
+				.outputMode(OutputMode.Complete())
+				.start();
+		
+		query.awaitTermination();
 		
 	}
 
