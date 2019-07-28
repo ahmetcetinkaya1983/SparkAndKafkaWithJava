@@ -8,6 +8,8 @@ import org.apache.spark.sql.SparkSession;
 import org.apache.spark.sql.streaming.OutputMode;
 import org.apache.spark.sql.streaming.StreamingQuery;
 import org.apache.spark.sql.streaming.StreamingQueryException;
+import org.apache.spark.sql.streaming.Trigger;
+import org.apache.spark.streaming.Durations;
 
 public class ViewingFiguresStructuredVersion {
 
@@ -33,7 +35,7 @@ public class ViewingFiguresStructuredVersion {
 		
 		//key, value, timestamp
 		Dataset<Row> results = 
-				session.sql("select window, cast(value as string) as course_name, sum(5) as seconds_watched from viewing_figures group by window('timestamp', '2 minutes'),course_name ");
+				session.sql("select window, cast(value as string) as course_name, sum(5) as seconds_watched from viewing_figures group by window(timestamp, '2 minutes'),course_name ");
 		
 		StreamingQuery query = results
 				.writeStream()
@@ -42,7 +44,7 @@ public class ViewingFiguresStructuredVersion {
 				.option("truncate", false)
 				.option("numRows", 50)
 				.start();
-		
+//				.trigger(Trigger.ProcessingTime(Durations.minutes(1))) //used for batch timing
 		query.awaitTermination();
 		
 	}
