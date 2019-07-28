@@ -33,12 +33,14 @@ public class ViewingFiguresStructuredVersion {
 		
 		//key, value, timestamp
 		Dataset<Row> results = 
-				session.sql("select cast(value as string) as course_name, sum(5) from viewing_figures group by course_name");
+				session.sql("select window, cast(value as string) as course_name, sum(5) as seconds_watched from viewing_figures group by window('timestamp', '2 minutes'),course_name ");
 		
 		StreamingQuery query = results
 				.writeStream()
 				.format("console")
 				.outputMode(OutputMode.Complete())
+				.option("truncate", false)
+				.option("numRows", 50)
 				.start();
 		
 		query.awaitTermination();
